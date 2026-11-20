@@ -4,11 +4,15 @@ import java.awt.Graphics;
 
 public class Car {
 
-    // Instance variables
+    // Location and size of the car
     private int x, y;
     private int width, height;
     private int speed;
+    private boolean opponent;
+    private boolean truck;
+    private boolean rage;
 
+    // Car colors
     private Color body;
     private Color darkRed;
     private Color lightRed;
@@ -17,13 +21,14 @@ public class Car {
     private Color gray;
     private Color darkGray;
 
+    // Constructor for the player's car
     public Car(int x, int y) {
         this.x = x;
         this.y = y;
 
         width = 48;
         height = 84;
-        speed = 3;
+        speed = 4;
 
         body = new Color(214, 16, 16);
         darkRed = new Color(139, 10, 10);
@@ -34,8 +39,34 @@ public class Car {
         darkGray = new Color(60, 60, 66);
     }
 
+    // Constructor for opponents with different colors
+    public Car(int x, int y, Color color) {
+        this(x, y, color, false);
+    }
+
+    // Opponent trucks use the same lane width but have a longer body
+    public Car(int x, int y, Color color, boolean truck) {
+        this(x, y);
+
+        opponent = true;
+        this.truck = truck;
+        rage = color.equals(Color.BLACK);
+        if (truck) {
+            height = 108;
+        }
+
+        body = color;
+        darkRed = color.darker();
+        lightRed = color.brighter();
+    }
+
     // Draw the Formula 1 car
     public void draw(Graphics g) {
+
+        if (opponent) {
+            drawRoadVehicle(g);
+            return;
+        }
 
         // Front tires
         g.setColor(black);
@@ -108,7 +139,7 @@ public class Car {
         g.setColor(lightRed);
         g.fillRect(x + 18, y + 54, 3, 12);
 
-        // Yellow center stripe
+        // Center stripe
         g.setColor(yellow);
         g.fillRect(x + 21, y + 51, 6, 18);
 
@@ -138,46 +169,64 @@ public class Car {
         g.fillRect(x + 21, y + 78, 6, 3);
     }
 
-    // Move the car up
-    public void moveUp() {
-        if (y - speed >= 0) {
-            y -= speed;
-        }
+    // Keep opponents as simple blocks until their final designs are ready
+    private void drawRoadVehicle(Graphics g) {
+        g.setColor(body);
+        g.fillRect(x + 4, y + 2, width - 8, height - 4);
+
+        g.setColor(rage ? Color.RED : body.darker());
+        g.drawRect(x + 4, y + 2, width - 8, height - 4);
     }
 
-    // Move the car down
-    public void moveDown() {
-        if (y + height + speed <= 600) {
-            y += speed;
-        }
+    // Signal lamps are visible on both ends of the turning side
+    public void drawSignal(Graphics g, boolean left, boolean on) {
+        int lampX = left ? x + 3 : x + width - 10;
+        g.setColor(on ? Color.YELLOW : new Color(120, 75, 0));
+        g.fillRect(lampX, y + 4, 7, 7);
+        g.fillRect(lampX, y + height - 11, 7, 7);
     }
 
-    // Move the car left
+    public void drawBrakeLights(Graphics g) {
+        g.setColor(Color.RED);
+        g.fillRect(x + 9, y + height - 10, 8, 6);
+        g.fillRect(x + 31, y + height - 10, 8, 6);
+    }
+
+    public boolean isRage() {
+        return rage;
+    }
+
+    // Move player left while staying on the road
     public void moveLeft() {
-        if (x - speed >= 0) {
+        if (x - speed >= 210) {
             x -= speed;
         }
     }
 
-    // Move the car right
+    // Move player right while staying on the road
     public void moveRight() {
-        if (x + width + speed <= 800) {
+        if (x + width + speed <= 590) {
             x += speed;
         }
     }
 
-    // Check for collision with an obstacle
-    public boolean checkCollision(Obstacle obs) {
+    // Move opponent car downward
+    public void moveDown(int amount) {
+        y += amount;
+    }
 
-        int oX = obs.getX();
-        int oY = obs.getY();
-        int oWidth = obs.getWidth();
-        int oHeight = obs.getHeight();
+    // Check collision between two cars
+    public boolean checkCollision(Car other) {
 
-        if ((x + width >= oX) &&
-            (x <= oX + oWidth) &&
-            (y + height >= oY) &&
-            (y <= oY + oHeight)) {
+        int oX = other.getX();
+        int oY = other.getY();
+        int oWidth = other.getWidth();
+        int oHeight = other.getHeight();
+
+        if ((x + width > oX) &&
+            (x < oX + oWidth) &&
+            (y + height > oY) &&
+            (y < oY + oHeight)) {
 
             return true;
         }
@@ -185,13 +234,13 @@ public class Car {
         return false;
     }
 
-    // Set the car's position
+    // Set the car position
     public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
-    // Set the car's speed
+    // Set the car speed
     public void setSpeed(int speed) {
         this.speed = speed;
     }

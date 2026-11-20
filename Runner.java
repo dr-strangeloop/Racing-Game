@@ -1,6 +1,7 @@
 import javax.swing.JFrame;
 
 public class Runner {
+
     public static void main(String[] args) {
 
         JFrame frame = new JFrame("Apex Racer");
@@ -9,14 +10,15 @@ public class Runner {
 
         // Create panel and add it to the frame
         Screen panel = new Screen();
+
         frame.add(panel);
         frame.pack();
         frame.setVisible(true);
 
-        // Give the panel keyboard focus
+        // Give keyboard focus to the panel
         panel.requestFocusInWindow();
 
-        // Start the animation
+        // Start animation
         panel.animate();
     }
 }
